@@ -1,0 +1,23 @@
+services:
+  nats:
+    image: nats:2
+    container_name: my-nats-server
+    command: -js # Enable JetStream for persistent messaging capabilities
+    environment:
+      # Include common environment variables from the root compose file
+      <<: *common_environment_variables
+    ports:
+      - "4222:4222" # Client port
+      - "8222:8222" # Monitoring port
+    volumes:
+      - nats_data:/data # For JetStream persistence
+    healthcheck:
+      test: ["CMD", "nats-req", "--server", "nats://localhost:4222", "--timeout", "1s", "PING"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  nats_data:
+    driver: local

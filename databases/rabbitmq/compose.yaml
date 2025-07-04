@@ -1,0 +1,24 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: my-rabbitmq
+    environment:
+      # Include common environment variables
+      <<: *common_environment_variables
+      RABBITMQ_DEFAULT_USER: ${DB_USERNAME} # Use shared username
+      RABBITMQ_DEFAULT_PASS: ${DB_PASSWORD} # Use shared password
+    ports:
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # Management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
+    driver: local

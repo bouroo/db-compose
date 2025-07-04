@@ -1,0 +1,25 @@
+# databases/mongodb/docker-compose.yaml
+services:
+  mongodb:
+    image: mongo:8
+    container_name: my-mongodb-db
+    environment:
+      # Include common environment variables from the root compose file
+      <<: *common_environment_variables
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${DB_NAME}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+    driver: local
