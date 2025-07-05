@@ -13,3 +13,7 @@ services:
     restart: unless-stopped
     networks:
       - db_shared_network
+
+volumes:
+  redis_data:
+    driver: local

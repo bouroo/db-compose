@@ -14,3 +14,7 @@ services:
     restart: unless-stopped
     networks:
       - db_shared_network
+
+volumes:
+  scylla_data:
+    driver: local
