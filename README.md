@@ -26,6 +26,8 @@ This monorepo allows you to:
 
 Common environment variables are managed in a `.env` file located in the root directory. These variables are automatically loaded by `podman compose` and made available to all services.
 
+All services are configured to use a shared `db_shared_network` for inter-service communication. This network is defined in the root `compose.yaml`.
+
 All service images are pulled from `mirror.gcr.io` to ensure consistent and reliable access.
 
 This allows you to centrally manage:

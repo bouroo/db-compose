@@ -22,6 +22,9 @@ jobs:
           # GitHub Actions runners usually have Docker pre-installed
           echo "Setting up Docker Compose..."
 
+      - name: Copy example.env to .env
+        run: cp example.env .env
+
       - name: Validate Compose files
         run: |
           # Use docker compose config to validate the syntax and structure

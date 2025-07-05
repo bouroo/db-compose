@@ -10,3 +10,7 @@ include:
   - ./databases/scylladb/compose.yaml
   - ./databases/traefik/compose.yaml
   - ./databases/valkey/compose.yaml
+
+networks:
+  db_shared_network:
+    name: db_shared_network

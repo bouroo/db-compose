@@ -18,6 +18,8 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - db_shared_network
 
 volumes:
   mongodb_data:

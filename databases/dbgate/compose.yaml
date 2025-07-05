@@ -10,6 +10,9 @@ services:
       - dbgate_data:/root/.dbgate
     depends_on:
       - traefik
+    restart: unless-stopped
+    networks:
+      - db_shared_network
 
 volumes:
   dbgate_data:
