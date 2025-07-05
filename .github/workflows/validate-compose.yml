@@ -1,0 +1,37 @@
+name: Validate Docker Compose
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-compose:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          # Install Docker Compose (v2) if not already present
+          # GitHub Actions runners usually have Docker pre-installed
+          echo "Setting up Docker Compose..."
+
+      - name: Copy example.env to .env
+        run: cp example.env .env
+
+      - name: Validate Compose files
+        run: |
+          # Use docker compose config to validate the syntax and structure
+          # This command will fail if there are any syntax errors or unresolved references
+          docker compose config
+
+      - name: Pull Docker images
+        run: |
+          # Attempt to pull all images to ensure they are accessible from the configured registry
+          docker compose pull

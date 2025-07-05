@@ -1,0 +1,28 @@
+services:
+  mariadb:
+    image: mirror.gcr.io/mariadb:11
+    container_name: my-mariadb
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_AUTO_UPGRADE: true
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - db_shared_network
+
+volumes:
+  mariadb_data:
+    driver: local

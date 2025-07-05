@@ -1,0 +1,19 @@
+services:
+  redis:
+    image: mirror.gcr.io/redis:8-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - db_shared_network
+
+volumes:
+  redis_data:
+    driver: local

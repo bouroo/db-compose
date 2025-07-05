@@ -1,0 +1,16 @@
+include:
+  - ./databases/dbgate/compose.yaml
+  - ./databases/kafka/compose.yaml
+  - ./databases/mariadb/compose.yaml
+  - ./databases/mongo/compose.yaml
+  - ./databases/nats/compose.yaml
+  - ./databases/postgres/compose.yaml
+  - ./databases/rabbitmq/compose.yaml
+  - ./databases/redis/compose.yaml
+  - ./databases/scylladb/compose.yaml
+  - ./databases/traefik/compose.yaml
+  - ./databases/valkey/compose.yaml
+
+networks:
+  db_shared_network:
+    name: db_shared_network

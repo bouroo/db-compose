@@ -1,0 +1,19 @@
+services:
+  dbgate:
+    image: mirror.gcr.io/dbgate/dbgate:6.5.5-alpine
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dbgate.rule=Host(`dbgate.localhost`)"
+      - "traefik.http.routers.dbgate.entrypoints=web"
+      - "traefik.http.services.dbgate.loadbalancer.server.port=3000"
+    volumes:
+      - dbgate_data:/root/.dbgate
+    depends_on:
+      - traefik
+    restart: unless-stopped
+    networks:
+      - db_shared_network
+
+volumes:
+  dbgate_data:
+    driver: local

@@ -1,0 +1,18 @@
+services:
+  traefik:
+    image: mirror.gcr.io/traefik:3
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.network=db_shared_network
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+    ports:
+      - "10080:80"
+      - "18080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    networks:
+      - db_shared_network

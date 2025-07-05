@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: mirror.gcr.io/postgres:17-alpine
+    container_name: my-postgres-db
+    shm_size: 128mb
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - db_shared_network
+
+volumes:
+  postgres_data:
+    driver: local

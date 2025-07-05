@@ -1,0 +1,61 @@
+services:
+  zookeeper:
+    image: mirror.gcr.io/confluentinc/cp-zookeeper:7.4.10 # Using a stable version from Confluent
+    container_name: my-zookeeper
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - db_shared_network
+  kafka:
+    image: mirror.gcr.io/confluentinc/cp-kafka:7.4.10 # Using a stable version from Confluent
+    container_name: my-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy # Ensure ZooKeeper is healthy before starting Kafka
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    ports:
+      - "9092:9092" # External port for clients
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      # This health check requires 'kafka-topics' which might not be immediately available
+      # after container start. A TCP check on port 9092 could be an alternative for faster initial check.
+      test:
+        [
+          "CMD-SHELL",
+          "kafka-topics --bootstrap-server localhost:9092 --list || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - db_shared_network
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local

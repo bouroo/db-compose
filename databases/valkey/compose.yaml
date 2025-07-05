@@ -1,0 +1,24 @@
+services:
+  valkey:
+    image: mirror.gcr.io/valkey/valkey:8-alpine
+    container_name: my-valkey-db
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      VALKEY_EXTRA_FLAGS: "--save 60 1 --loglevel warning"
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - db_shared_network
+
+volumes:
+  valkey_data:
+    driver: local
