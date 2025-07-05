@@ -16,7 +16,10 @@ include:
   - ./databases/mariadb/compose.yaml
   - ./databases/mongodb/compose.yaml
   - ./databases/redis/compose.yaml
+  - ./databases/scylladb/compose.yaml
   - ./databases/rabbitmq/compose.yaml
   - ./databases/valkey/compose.yaml
   - ./databases/nats/compose.yaml
-  - ./databases/kafka/compose.yaml # This will include both Zookeeper and Kafka
+  - ./databases/kafka/compose.yaml
+  - ./databases/traefik/compose.yaml
+  - ./databases/dbgate/compose.yaml

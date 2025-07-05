@@ -69,36 +69,36 @@ Navigate to the **root directory** of the monorepo (where the main `compose.yaml
 
 * **To start ALL services (all databases):**
     ```bash
-    docker compose up -d
+    podman compose up -d
     ```
 
 * **To start specific services (e.g., PostgreSQL and RabbitMQ):**
     ```bash
-    docker compose up -d postgres rabbitmq
+    podman compose up -d postgres rabbitmq
     ```
-    *Note: When starting `kafka`, its dependency `zookeeper` will also be started automatically.*
+    *Note: The available services are: dbgate, kafka, mariadb, mongo, nats, postgres, rabbitmq, redis, scylladb, traefik, valkey. When starting `kafka`, its dependency `zookeeper` will also be started automatically.*
 
 ### Managing Services
 
 * **View running services:**
     ```bash
-    docker compose ps
+    podman compose ps
     ```
 * **View logs for all services (follow output):**
     ```bash
-    docker compose logs -f
+    podman compose logs -f
     ```
 * **View logs for a specific service (e.g., MongoDB):**
     ```bash
-    docker compose logs -f mongodb
+    podman compose logs -f mongodb
     ```
 * **Stop all services:**
     ```bash
-    docker compose down
+    podman compose down
     ```
 * **Stop and remove containers, networks, and volumes (data will be lost unless volumes are managed manually):**
     ```bash
-    docker compose down --volumes
+    podman compose down --volumes
     ```
 
 ## 4. Benefits of this Setup
@@ -108,4 +108,4 @@ Navigate to the **root directory** of the monorepo (where the main `compose.yaml
 * **Reusability:** Individual database `compose.yaml` files can potentially be reused in other projects.
 * **Consistency:** Shared environment variables ensure uniform settings across your database landscape.
 * **Scalability:** Easily expand your database collection by adding new `compose.yaml` files and including them.
-* **Centralized Control:** Manage all your database services from a single root Docker Compose file.
+* **Centralized Control:** Manage all your database services from a single root Compose file.
