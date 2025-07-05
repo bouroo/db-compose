@@ -1,6 +1,6 @@
 services:
   mariadb:
-    image: mirror.gcr.io/mariadb:11-alpine
+    image: mirror.gcr.io/mariadb:11
     container_name: my-mariadb
     environment:
       TZ: ${TZ}
