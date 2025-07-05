@@ -1,10 +1,10 @@
 services:
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: mirror.gcr.io/rabbitmq:3-management-alpine
     container_name: my-rabbitmq
     environment:
-      # Include common environment variables
-      <<: *common_environment_variables
+      TZ: ${TZ}
+      LANG: ${LANG}
       RABBITMQ_DEFAULT_USER: ${DB_USERNAME} # Use shared username
       RABBITMQ_DEFAULT_PASS: ${DB_PASSWORD} # Use shared password
     ports:

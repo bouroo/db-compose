@@ -1,10 +1,11 @@
 services:
   postgres:
-    image: postgres:17-alpine
+    image: mirror.gcr.io/postgres:17-alpine
     container_name: my-postgres-db
+    shm_size: 128mb
     environment:
-      # Include common environment variables from the root compose file
-      <<: *common_environment_variables
+      TZ: ${TZ}
+      LANG: ${LANG}
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}

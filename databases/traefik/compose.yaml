@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:3
+    image: mirror.gcr.io/traefik:3
     command:
       - --api.dashboard=true
       - --api.insecure=true

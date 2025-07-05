@@ -1,10 +1,10 @@
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.10 # Using a stable version from Confluent
+    image: mirror.gcr.io/confluentinc/cp-zookeeper:7.4.10 # Using a stable version from Confluent
     container_name: my-zookeeper
     environment:
-      # Include common environment variables from the root compose file
-      <<: *common_environment_variables
+      TZ: ${TZ}
+      LANG: ${LANG}
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
@@ -17,16 +17,15 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-
   kafka:
-    image: confluentinc/cp-kafka:7.4.10 # Using a stable version from Confluent
+    image: mirror.gcr.io/confluentinc/cp-kafka:7.4.10 # Using a stable version from Confluent
     container_name: my-kafka
     depends_on:
       zookeeper:
         condition: service_healthy # Ensure ZooKeeper is healthy before starting Kafka
     environment:
-      # Include common environment variables from the root compose file
-      <<: *common_environment_variables
+      TZ: ${TZ}
+      LANG: ${LANG}
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092

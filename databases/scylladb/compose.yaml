@@ -1,6 +1,6 @@
 services:
   scylladb:
-    image: scylladb/scylla:5.2.0
+    image: mirror.gcr.io/scylladb/scylla:5.2.0
     ports:
       - "9042:9042"
     command: --smp 1 --memory 750M --overprovisioned 1

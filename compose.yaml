@@ -1,25 +1,12 @@
-# Define common environment variables using a YAML anchor.
-# These variables will be merged into the 'environment' section
-# of services in the included files that use '<<: *common_environment_variables'.
-x-common-environment-variables: &common_environment_variables
-  TZ: Asia/Bangkok # Set your desired timezone
-  LANG: en_US.UTF-8 # Set your desired language
-  DB_USERNAME: common_user # CHANGE THIS: Your common database username
-  DB_PASSWORD: your_secure_password # CHANGE THIS: Your common database password
-  DB_NAME: common_database # CHANGE THIS: Your common database name
-  # Add any other common environment variables here that should apply to all services
-
-# Include directives for individual database Compose files.
-# Compose will load and merge these configurations.
 include:
-  - ./databases/postgres/compose.yaml
+  - ./databases/dbgate/compose.yaml
+  - ./databases/kafka/compose.yaml
   - ./databases/mariadb/compose.yaml
-  - ./databases/mongodb/compose.yaml
+  - ./databases/mongo/compose.yaml
+  - ./databases/nats/compose.yaml
+  - ./databases/postgres/compose.yaml
+  - ./databases/rabbitmq/compose.yaml
   - ./databases/redis/compose.yaml
   - ./databases/scylladb/compose.yaml
-  - ./databases/rabbitmq/compose.yaml
-  - ./databases/valkey/compose.yaml
-  - ./databases/nats/compose.yaml
-  - ./databases/kafka/compose.yaml
   - ./databases/traefik/compose.yaml
-  - ./databases/dbgate/compose.yaml
+  - ./databases/valkey/compose.yaml

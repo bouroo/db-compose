@@ -17,15 +17,16 @@ Just a database collection in container composes
 ## 1. Overview
 
 This monorepo allows you to:
-* Define each database/messaging service in its own isolated `compose.yaml` file.
-* Include all desired services in a single root `compose.yaml`.
-* Share common environment variables (like timezone, language, database credentials) across all services.
+* Define each database/messaging service in its own isolated `compose.yaml` file within its respective directory.
+* Include all desired services in a single root `compose.yaml` using the `include` directive.
+* Share common environment variables (like timezone, language, database credentials) across all services using a `.env` file.
 * Easily start, stop, and manage multiple services from a central location.
-* Maintain clear separation of concerns for each database's configuration.
 
 ## 2. Shared Configuration
 
-The `compose.yaml` in the root directory defines a set of common environment variables using a YAML anchor (`&common_environment_variables`). These variables are then merged into the `environment` section of each individual database service using a YAML merge key (`<<: *common_environment_variables`).
+Common environment variables are managed in a `.env` file located in the root directory. These variables are automatically loaded by `podman compose` and made available to all services.
+
+All service images are pulled from `mirror.gcr.io` to ensure consistent and reliable access.
 
 This allows you to centrally manage:
 
@@ -35,7 +36,7 @@ This allows you to centrally manage:
 * **`DB_PASSWORD`**: A common password for database access.
 * **`DB_NAME`**: A common default database name (though specific databases might override or ignore this for their primary function).
 
-**Important:** Remember to replace placeholder values like `your_secure_password` in the root `compose.yaml` with your actual secure credentials.
+**Important:** Remember to replace placeholder values like `your_secure_password` in the `.env` file with your actual secure credentials.
 
 ## 3. Getting Started
 
@@ -50,18 +51,7 @@ This allows you to centrally manage:
     git clone <your-repo-url>
     cd <your-repo-name>
     ```
-2.  **Edit `compose.yaml`**: Open the **root** `compose.yaml` file and **change the placeholder values** for `DB_USERNAME`, `DB_PASSWORD`, and `DB_NAME` to your desired secure credentials.
-
-    ```yaml
-    # compose.yaml (Root file)
-    x-common-environment-variables: &common_environment_variables
-      TZ: Asia/Bangkok
-      LANG: c.UTF-8
-      DB_USERNAME: your_db_user      # <--- CHANGE THIS
-      DB_PASSWORD: your_secure_password # <--- CHANGE THIS
-      DB_NAME: your_db_name          # <--- CHANGE THIS
-      # Add any other common environment variables here
-    ```
+2.  **Edit `.env`**: Open the **root** `.env` file and **change the placeholder values** for `DB_USERNAME`, `DB_PASSWORD`, and `DB_NAME` to your desired secure credentials.
 
 ### Starting Services
 
@@ -106,6 +96,6 @@ Navigate to the **root directory** of the monorepo (where the main `compose.yaml
 * **Modularity:** Each service is defined independently, making it easy to add, remove, or update individual databases without affecting others.
 * **Readability:** Configurations are broken down into smaller, manageable files.
 * **Reusability:** Individual database `compose.yaml` files can potentially be reused in other projects.
-* **Consistency:** Shared environment variables ensure uniform settings across your database landscape.
+* **Consistency:** Shared environment variables from the `.env` file ensure uniform settings across your database landscape.
 * **Scalability:** Easily expand your database collection by adding new `compose.yaml` files and including them.
 * **Centralized Control:** Manage all your database services from a single root Compose file.

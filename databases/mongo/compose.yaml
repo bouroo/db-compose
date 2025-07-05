@@ -1,11 +1,10 @@
-# databases/mongodb/docker-compose.yaml
 services:
   mongodb:
-    image: mongo:8
+    image: mirror.gcr.io/mongo:8
     container_name: my-mongodb-db
     environment:
-      # Include common environment variables from the root compose file
-      <<: *common_environment_variables
+      TZ: ${TZ}
+      LANG: ${LANG}
       MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
       MONGO_INITDB_DATABASE: ${DB_NAME}
