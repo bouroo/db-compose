@@ -1,6 +1,6 @@
 services:
   valkey:
-    image: mirror.gcr.io/valkey/valkey:8
+    image: mirror.gcr.io/valkey/valkey:8-alpine
     container_name: my-valkey-db
     environment:
       TZ: ${TZ}

@@ -1,6 +1,6 @@
 services:
   dbgate:
-    image: mirror.gcr.io/dbgate/dbgate:latest
+    image: mirror.gcr.io/dbgate/dbgate:6.5.5-alpine
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dbgate.rule=Host(`dbgate.localhost`)"

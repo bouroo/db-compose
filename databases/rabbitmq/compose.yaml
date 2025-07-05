@@ -1,6 +1,6 @@
 services:
   rabbitmq:
-    image: mirror.gcr.io/rabbitmq:3-management-alpine
+    image: mirror.gcr.io/rabbitmq:4-management-alpine
     container_name: my-rabbitmq
     environment:
       TZ: ${TZ}

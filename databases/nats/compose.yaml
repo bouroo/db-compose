@@ -1,6 +1,6 @@
 services:
   nats:
-    image: mirror.gcr.io/nats:2
+    image: mirror.gcr.io/nats:2-alpine
     container_name: my-nats-server
     command: -js # Enable JetStream for persistent messaging capabilities
     environment:
@@ -12,16 +12,7 @@ services:
     volumes:
       - nats_data:/data # For JetStream persistence
     healthcheck:
-      test:
-        [
-          "CMD",
-          "nats-req",
-          "--server",
-          "nats://localhost:4222",
-          "--timeout",
-          "1s",
-          "PING",
-        ]
+      test: ["CMD", "nats-server", "--health_check"]
       interval: 5s
       timeout: 3s
       retries: 5

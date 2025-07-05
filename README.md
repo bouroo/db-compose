@@ -51,7 +51,7 @@ This allows you to centrally manage:
     git clone <your-repo-url>
     cd <your-repo-name>
     ```
-2.  **Edit `.env`**: Open the **root** `.env` file and **change the placeholder values** for `DB_USERNAME`, `DB_PASSWORD`, and `DB_NAME` to your desired secure credentials.
+2.  **Edit `.env`**: Create the **root** `.env` file from `example.env` and **change the placeholder values** for `DB_USERNAME`, `DB_PASSWORD`, and `DB_NAME` to your desired secure credentials.
 
 ### Starting Services
 
