@@ -1,7 +1,7 @@
 services:
   mongodb:
     image: mirror.gcr.io/mongo:8
-    container_name: my-mongodb-db
+    container_name: mongodb
     environment:
       TZ: ${TZ}
       LANG: ${LANG}
@@ -19,7 +19,7 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - db_shared_network
+      - ct_shared_network
 
 volumes:
   mongodb_data:

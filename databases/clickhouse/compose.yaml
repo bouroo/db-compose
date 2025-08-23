@@ -1,0 +1,30 @@
+services:
+  clickhouse:
+    image: mirror.gcr.io/clickhouse:lts
+    container_name: clickhouse
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+      CLICKHOUSE_DB: ${DB_NAME}
+      CLICKHOUSE_USER: ${DB_USERNAME}
+      CLICKHOUSE_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse/
+      - clickhouse_log:/var/log/clickhouse-server/
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+
+volumes:
+  clickhouse_data:
+    driver: local
+  clickhouse_log:
+    driver: local

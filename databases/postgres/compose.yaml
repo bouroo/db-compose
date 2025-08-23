@@ -1,7 +1,7 @@
 services:
   postgres:
     image: mirror.gcr.io/postgres:17-alpine
-    container_name: my-postgres-db
+    container_name: postgres
     shm_size: 128mb
     environment:
       TZ: ${TZ}
@@ -20,7 +20,7 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - db_shared_network
+      - ct_shared_network
 
 volumes:
   postgres_data:

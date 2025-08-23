@@ -2,6 +2,7 @@ include:
   - ./databases/dbgate/compose.yaml
   - ./databases/kafka/compose.yaml
   - ./databases/mariadb/compose.yaml
+  - ./databases/clickhouse/compose.yaml
   - ./databases/mongo/compose.yaml
   - ./databases/nats/compose.yaml
   - ./databases/postgres/compose.yaml
@@ -12,5 +13,5 @@ include:
   - ./databases/valkey/compose.yaml
 
 networks:
-  db_shared_network:
-    name: db_shared_network
+  ct_shared_network:
+    name: ct_shared_network

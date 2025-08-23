@@ -26,7 +26,7 @@ This monorepo allows you to:
 
 Common environment variables are managed in a `.env` file located in the root directory. These variables are automatically loaded by `podman compose` and made available to all services.
 
-All services are configured to use a shared `db_shared_network` for inter-service communication. This network is defined in the root `compose.yaml`.
+All services are configured to use a shared `ct_shared_network` for inter-service communication. This network is defined in the root `compose.yaml`.
 
 All service images are pulled from `mirror.gcr.io` to ensure consistent and reliable access.
 
@@ -68,7 +68,7 @@ Navigate to the **root directory** of the monorepo (where the main `compose.yaml
     ```bash
     podman compose up -d postgres rabbitmq
     ```
-    *Note: The available services are: dbgate, kafka, mariadb, mongo, nats, postgres, rabbitmq, redis, scylladb, traefik, valkey. When starting `kafka`, its dependency `zookeeper` will also be started automatically.*
+    *Note: The available services are: clickhouse, dbgate, kafka, mariadb, mongo, nats, postgres, rabbitmq, redis, scylladb, traefik, valkey. When starting `kafka`, its dependency `zookeeper` will also be started automatically.*
 
 ### Managing Services
 

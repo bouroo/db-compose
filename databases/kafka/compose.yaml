@@ -1,7 +1,7 @@
 services:
   zookeeper:
     image: mirror.gcr.io/confluentinc/cp-zookeeper:7.4.10 # Using a stable version from Confluent
-    container_name: my-zookeeper
+    container_name: zookeeper
     environment:
       TZ: ${TZ}
       LANG: ${LANG}
@@ -18,10 +18,10 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - db_shared_network
+      - ct_shared_network
   kafka:
     image: mirror.gcr.io/confluentinc/cp-kafka:7.4.10 # Using a stable version from Confluent
-    container_name: my-kafka
+    container_name: kafka
     depends_on:
       zookeeper:
         condition: service_healthy # Ensure ZooKeeper is healthy before starting Kafka
@@ -52,7 +52,7 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - db_shared_network
+      - ct_shared_network
 
 volumes:
   zookeeper_data:

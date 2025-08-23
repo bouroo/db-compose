@@ -1,6 +1,7 @@
 services:
   dbgate:
-    image: mirror.gcr.io/dbgate/dbgate:6.5.5-alpine
+    image: mirror.gcr.io/dbgate/dbgate:alpine
+    container_name: dbgate
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dbgate.rule=Host(`dbgate.localhost`)"
@@ -12,7 +13,7 @@ services:
       - traefik
     restart: unless-stopped
     networks:
-      - db_shared_network
+      - ct_shared_network
 
 volumes:
   dbgate_data:
