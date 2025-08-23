@@ -12,6 +12,7 @@ Just a database collection in container composes
     - [Setup](#setup)
     - [Starting Services](#starting-services)
     - [Managing Services](#managing-services)
+    - [Using DBGate](#using-dbgate)
   - [4. Benefits of this Setup](#4-benefits-of-this-setup)
 
 ## 1. Overview
@@ -91,6 +92,27 @@ Navigate to the **root directory** of the monorepo (where the main `compose.yaml
 * **Stop and remove containers, networks, and volumes (data will be lost unless volumes are managed manually):**
     ```bash
     podman compose down --volumes
+
+### Using DBGate
+
+DBGate is a web-based database client designed for various database systems. When started via `podman compose`, it's accessible through your web browser.
+
+1.  **Access DBGate:**
+   Open your web browser and navigate to `http://dbgate.localhost:30080`.
+
+2.  **Connect to a Database:**
+   *   On the DBGate interface, click on "Add connection".
+   *   Choose the database type you want to connect to (e.g., PostgreSQL, MySQL, MongoDB).
+   *   **For PostgreSQL (or other databases):**
+       *   **Server Host:** `postgres` (This is the service name defined in `databases/postgres/compose.yaml` and is resolvable within the `ct_shared_network`).
+       *   **Server Port:** `5432` (Default PostgreSQL port).
+       *   **User:** `DB_USERNAME` (from your `.env` file).
+       *   **Password:** `DB_PASSWORD` (from your `.env` file).
+       *   **Database:** `DB_NAME` (from your `.env` file, or a specific database name if you've created one).
+   *   Fill in the details for other databases similarly, using their respective service names as the host (e.g., `mariadb`, `mongo`, `redis`) and their default ports.
+
+3.  **Explore and Manage:**
+   Once connected, you can browse schemas, tables, run queries, and manage your database directly from the DBGate interface.
     ```
 
 ## 4. Benefits of this Setup
