@@ -1,0 +1,165 @@
+services:
+  valkey-0:
+    image: mirror.gcr.io/valkey/valkey:8-alpine
+    container_name: valkey-0
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      VALKEY_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_0_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-h", "localhost", "-p", "6379", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+    command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
+
+  valkey-1:
+    image: mirror.gcr.io/valkey/valkey:8-alpine
+    container_name: valkey-1
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      VALKEY_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - valkey_1_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-h", "localhost", "-p", "6379", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+    command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
+
+  valkey-2:
+    image: mirror.gcr.io/valkey/valkey:8-alpine
+    container_name: valkey-2
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      VALKEY_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - valkey_2_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-h", "localhost", "-p", "6379", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+    command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
+
+  valkey-3:
+    image: mirror.gcr.io/valkey/valkey:8-alpine
+    container_name: valkey-3
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      VALKEY_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - valkey_3_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-h", "localhost", "-p", "6379", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+    command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
+
+  valkey-4:
+    image: mirror.gcr.io/valkey/valkey:8-alpine
+    container_name: valkey-4
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      VALKEY_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - valkey_4_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-h", "localhost", "-p", "6379", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+    command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
+
+  valkey-5:
+    image: mirror.gcr.io/valkey/valkey:8-alpine
+    container_name: valkey-5
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      VALKEY_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - valkey_5_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-h", "localhost", "-p", "6379", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+    command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
+
+  valkey-cluster-init:
+    image: mirror.gcr.io/valkey/valkey:8-alpine
+    container_name: valkey-cluster-init
+    environment:
+      VALKEY_PASSWORD: ${DB_PASSWORD}
+      VALKEY_REPLICAS: ${VALKEY_REPLICAS:-1} # Changed to 1 replica
+    networks:
+      - ct_shared_network
+    depends_on:
+      valkey-0:
+        condition: service_healthy
+      valkey-1:
+        condition: service_healthy
+      valkey-2:
+        condition: service_healthy
+      valkey-3:
+        condition: service_healthy
+      valkey-4:
+        condition: service_healthy
+      valkey-5:
+        condition: service_healthy
+    command: >
+      /bin/sh -c "
+        echo 'Waiting for Valkey nodes to start...' && \
+        until valkey-cli -h valkey-0 -p 6379 -a \"${DB_PASSWORD}\" ping; do sleep 1; done && \
+        until valkey-cli -h valkey-1 -p 6379 -a \"${DB_PASSWORD}\" ping; do sleep 1; done && \
+        until valkey-cli -h valkey-2 -p 6379 -a \"${DB_PASSWORD}\" ping; do sleep 1; done && \
+        until valkey-cli -h valkey-3 -p 6379 -a \"${DB_PASSWORD}\" ping; do sleep 1; done && \
+        until valkey-cli -h valkey-4 -p 6379 -a \"${DB_PASSWORD}\" ping; do sleep 1; done && \
+        until valkey-cli -h valkey-5 -p 6379 -a \"${DB_PASSWORD}\" ping; do sleep 1; done && \
+        echo 'Valkey nodes are up. Checking cluster status...' && \
+        if ! valkey-cli -h valkey-0 -p 6379 -a \"${DB_PASSWORD}\" --cluster check; then \
+          echo 'Creating Valkey cluster...' && \
+          valkey-cli --cluster create valkey-0:6379 valkey-1:6379 valkey-2:6379 valkey-3:6379 valkey-4:6379 valkey-5:6379 --cluster-replicas 1 --cluster-yes -a \"${DB_PASSWORD}\" \
+        else \
+          echo 'Valkey cluster already exists.' \
+        fi
+      "
+    restart: "no"
+
+volumes:
+  valkey_0_data:
+  valkey_1_data:
+  valkey_2_data:
+  valkey_3_data:
+  valkey_4_data:
+  valkey_5_data:
+    name: db-compose_valkey_5_data

@@ -69,7 +69,7 @@ Navigate to the **root directory** of the monorepo (where the main `compose.yaml
     ```bash
     podman compose up -d postgres rabbitmq
     ```
-    *Note: The available services are: clickhouse, dbgate, kafka, mariadb, mongo, nats, postgres, rabbitmq, redis, scylladb, traefik, valkey. When starting `kafka`, its dependency `zookeeper` will also be started automatically.*
+    *Note: The available services are: clickhouse, dbgate, kafka, mariadb, mariadb-galera, mongo, nats, postgres, postgres-cluster, rabbitmq, redis, redis-cluster, scylladb, traefik, valkey, valkey-cluster. When starting `kafka`, its dependency `zookeeper` will also be started automatically.*
 
 ### Managing Services
 

@@ -1,25 +1,18 @@
 services:
   nats:
     image: mirror.gcr.io/nats:2-alpine
-    container_name: nats-server
-    command: -js # Enable JetStream for persistent messaging capabilities
+    container_name: nats
     environment:
-      TZ: ${TZ}
-      LANG: ${LANG}
-    ports:
-      - "4222:4222" # Client port
-      - "8222:8222" # Monitoring port
+      - DB_USER=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
     volumes:
-      - nats_data:/data # For JetStream persistence
-    healthcheck:
-      test: ["CMD", "nats-server", "--health_check"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+      - nats_data:/data
+    ports:
+      - "4222:4222"
     restart: unless-stopped
     networks:
       - ct_shared_network
 
 volumes:
   nats_data:
-    driver: local

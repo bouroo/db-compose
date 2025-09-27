@@ -1,26 +1,18 @@
 services:
   rabbitmq:
-    image: mirror.gcr.io/rabbitmq:4-management-alpine
+    image: mirror.gcr.io/rapidfort/rabbitmq-official:4-management-alpine
     container_name: rabbitmq
     environment:
-      TZ: ${TZ}
-      LANG: ${LANG}
-      RABBITMQ_DEFAULT_USER: ${DB_USERNAME} # Use shared username
-      RABBITMQ_DEFAULT_PASS: ${DB_PASSWORD} # Use shared password
-    ports:
-      - "5672:5672" # AMQP protocol port
-      - "15672:15672" # Management UI port
+      - DB_USER=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    ports:
+      - "5672:5672"
     restart: unless-stopped
     networks:
       - ct_shared_network
 
 volumes:
   rabbitmq_data:
-    driver: local

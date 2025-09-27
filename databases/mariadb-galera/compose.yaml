@@ -1,0 +1,166 @@
+services:
+  galera-node-0:
+    image: mirror.gcr.io/rapidfort/mariadb-official:lts
+    container_name: galera-node-0
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_GALERA_CLUSTER_NAME: galera_cluster
+      MARIADB_GALERA_NEW_CLUSTER: 'true'
+    volumes:
+      - galera_node_0_data:/var/lib/mysql
+    networks:
+      - ct_shared_network
+    healthcheck:
+      test: ["CMD", "mysql", "-u", "root", "-p${DB_PASSWORD}", "-e", "SHOW STATUS LIKE 'wsrep_local_state';"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    command: --wsrep-cluster-address=gcomm://
+
+  galera-node-1:
+    image: mirror.gcr.io/rapidfort/mariadb-official:lts
+    container_name: galera-node-1
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_GALERA_CLUSTER_NAME: galera_cluster
+      MARIADB_GALERA_CLUSTER_ADDRESS: gcomm://galera-node-0
+    volumes:
+      - galera_node_1_data:/var/lib/mysql
+    networks:
+      - ct_shared_network
+    healthcheck:
+      test: ["CMD", "mysql", "-u", "root", "-p${DB_PASSWORD}", "-e", "SHOW STATUS LIKE 'wsrep_local_state';"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    depends_on:
+      galera-node-0:
+        condition: service_healthy
+    command: --wsrep-cluster-address=gcomm://galera-node-0
+
+  galera-node-2:
+    image: mirror.gcr.io/rapidfort/mariadb-official:lts
+    container_name: galera-node-2
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_GALERA_CLUSTER_NAME: galera_cluster
+      MARIADB_GALERA_CLUSTER_ADDRESS: gcomm://galera-node-0
+    volumes:
+      - galera_node_2_data:/var/lib/mysql
+    networks:
+      - ct_shared_network
+    healthcheck:
+      test: ["CMD", "mysql", "-u", "root", "-p${DB_PASSWORD}", "-e", "SHOW STATUS LIKE 'wsrep_local_state';"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    depends_on:
+      galera-node-0:
+        condition: service_healthy
+      galera-node-1:
+        condition: service_healthy
+    command: --wsrep-cluster-address=gcomm://galera-node-0
+
+  maxscale:
+    image: mirror.gcr.io/maxscale/maxscale:24.02
+    container_name: maxscale
+    environment:
+      TZ: ${TZ}
+      LANG: ${LANG}
+      MAXSCALE_ADMIN_USER: ${ADMIN_UI_USERNAME}
+      MAXSCALE_ADMIN_PASSWORD: ${ADMIN_UI_PASSWORD}
+      MAXSCALE_MARIADB_USER: ${DB_USERNAME}
+      MAXSCALE_MARIADB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+      - "8989:8989"
+    volumes:
+      - maxscale_config:/etc/maxscale.d
+    networks:
+      - ct_shared_network
+    healthcheck:
+      test: ["CMD", "maxadmin", "-u", "${MAXSCALE_ADMIN_USER}", "-p", "${MAXSCALE_ADMIN_PASSWORD}", "list", "servers"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    depends_on:
+      galera-node-0:
+        condition: service_healthy
+      galera-node-1:
+        condition: service_healthy
+      galera-node-2:
+        condition: service_healthy
+    command: >
+      bash -c "
+        echo '[maxscale]
+        type=service
+        router=readwritesplit
+        servers=galera-node-0,galera-node-1,galera-node-2
+        user=${MAXSCALE_MARIADB_USER}
+        password=${MAXSCALE_MARIADB_PASSWORD}
+
+        [galera-node-0]
+        type=server
+        address=galera-node-0
+        port=3306
+        protocol=MariaDBBackend
+
+        [galera-node-1]
+        type=server
+        address=galera-node-1
+        port=3306
+        protocol=MariaDBBackend
+
+        [galera-node-2]
+        type=server
+        address=galera-node-2
+        port=3306
+        protocol=MariaDBBackend
+
+        [cli]
+        type=service
+        router=cli
+
+        [MariaDBBackend]
+        type=protocol
+        protocol=MariaDBBackend
+
+        [MaxScaleAdmin]
+        type=service
+        router=cli
+        auth_module=basic_auth
+
+        [basic_auth]
+        type=module
+        name=basic_auth
+        users=${MAXSCALE_ADMIN_USER}:${MAXSCALE_ADMIN_PASSWORD}
+        ' > /etc/maxscale.cnf && maxscale --user=maxscale --group=maxscale
+      "
+
+volumes:
+  galera_node_0_data:
+    driver: local
+  galera_node_1_data:
+    driver: local
+  galera_node_2_data:
+    driver: local
+  maxscale_config:

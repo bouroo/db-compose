@@ -1,0 +1,162 @@
+services:
+  redis-node-0:
+    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    container_name: redis-node-0
+    environment:
+      REDIS_PASSWORD: ${DB_PASSWORD}
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --protected-mode no --port 6379 --requirepass ${DB_PASSWORD}
+    volumes:
+      - redis_node_0_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${DB_PASSWORD}", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+
+  redis-node-1:
+    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    container_name: redis-node-1
+    environment:
+      REDIS_PASSWORD: ${DB_PASSWORD}
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --protected-mode no --port 6379 --requirepass ${DB_PASSWORD}
+    volumes:
+      - redis_node_1_data:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${DB_PASSWORD}", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+
+  redis-node-2:
+    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    container_name: redis-node-2
+    environment:
+      REDIS_PASSWORD: ${DB_PASSWORD}
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --protected-mode no --port 6379 --requirepass ${DB_PASSWORD}
+    volumes:
+      - redis_node_2_data:/data
+    ports:
+      - "6381:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${DB_PASSWORD}", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+
+  redis-node-3:
+    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    container_name: redis-node-3
+    environment:
+      REDIS_PASSWORD: ${DB_PASSWORD}
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --protected-mode no --port 6379 --requirepass ${DB_PASSWORD}
+    volumes:
+      - redis_node_3_data:/data
+    ports:
+      - "6382:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${DB_PASSWORD}", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+
+  redis-node-4:
+    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    container_name: redis-node-4
+    environment:
+      REDIS_PASSWORD: ${DB_PASSWORD}
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --protected-mode no --port 6379 --requirepass ${DB_PASSWORD}
+    volumes:
+      - redis_node_4_data:/data
+    ports:
+      - "6383:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${DB_PASSWORD}", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+
+  redis-node-5:
+    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    container_name: redis-node-5
+    environment:
+      REDIS_PASSWORD: ${DB_PASSWORD}
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --protected-mode no --port 6379 --requirepass ${DB_PASSWORD}
+    volumes:
+      - redis_node_5_data:/data
+    ports:
+      - "6384:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${DB_PASSWORD}", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+
+  redis-cluster-init:
+    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    container_name: redis-cluster-init
+    environment:
+      REDIS_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - ct_shared_network
+    depends_on:
+      redis-node-0:
+        condition: service_healthy
+      redis-node-1:
+        condition: service_healthy
+      redis-node-2:
+        condition: service_healthy
+      redis-node-3:
+        condition: service_healthy
+      redis-node-4:
+        condition: service_healthy
+      redis-node-5:
+        condition: service_healthy
+    command: >
+      /bin/sh -c "
+        echo 'Waiting for Redis nodes to start...' && \
+        until redis-cli -h redis-node-0 -p 6379 -a \"${REDIS_PASSWORD}\" ping; do sleep 1; done && \
+        until redis-cli -h redis-node-1 -p 6379 -a \"${REDIS_PASSWORD}\" ping; do sleep 1; done && \
+        until redis-cli -h redis-node-2 -p 6379 -a \"${REDIS_PASSWORD}\" ping; do sleep 1; done && \
+        until redis-cli -h redis-node-3 -p 6379 -a \"${REDIS_PASSWORD}\" ping; do sleep 1; done && \
+        until redis-cli -h redis-node-4 -p 6379 -a \"${REDIS_PASSWORD}\" ping; do sleep 1; done && \
+        until redis-cli -h redis-node-5 -p 6379 -a \"${REDIS_PASSWORD}\" ping; do sleep 1; done && \
+        echo 'Redis nodes are up. Checking cluster status...' && \
+        if ! redis-cli -h redis-node-0 -p 6379 -a \"${REDIS_PASSWORD}\" cluster info | grep -q 'cluster_state:ok'; then \
+          echo 'Creating Redis cluster...' && \
+          redis-cli --cluster create redis-node-0:6379 redis-node-1:6379 redis-node-2:6379 redis-node-3:6379 redis-node-4:6379 redis-node-5:6379 --cluster-replicas 1 -a \"${REDIS_PASSWORD}\" --cluster-yes \
+        else \
+          echo 'Redis cluster already exists.' \
+        fi
+      "
+    restart: "no"
+
+volumes:
+  redis_node_0_data:
+  redis_node_1_data:
+  redis_node_2_data:
+  redis_node_3_data:
+  redis_node_4_data:
+  redis_node_5_data:
+    name: db-compose_redis_node_5_data

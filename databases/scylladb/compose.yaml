@@ -1,20 +1,19 @@
 services:
   scylladb:
-    image: mirror.gcr.io/scylladb/scylla:2025.2
+    image: mirror.gcr.io/scylladb/scylla:2025.3
+    container_name: scylladb
+    environment:
+      - DB_USER=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - scylladb_data:/var/lib/scylla
     ports:
       - "9042:9042"
-    volumes:
-      - scylla_data:/var/lib/scylla
-    command: --smp 1 --memory 750M --overprovisioned 1
-    healthcheck:
-      test: ["CMD-SHELL", "/opt/scylladb/bin/nodetool status"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
     restart: unless-stopped
     networks:
       - ct_shared_network
 
 volumes:
-  scylla_data:
+  scylladb_data:
     driver: local

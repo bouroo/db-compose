@@ -1,16 +1,20 @@
 include:
+  - ./databases/clickhouse/compose.yaml
   - ./databases/dbgate/compose.yaml
   - ./databases/kafka/compose.yaml
   - ./databases/mariadb/compose.yaml
-  - ./databases/clickhouse/compose.yaml
+  - ./databases/mariadb-galera/compose.yaml
   - ./databases/mongo/compose.yaml
   - ./databases/nats/compose.yaml
   - ./databases/postgres/compose.yaml
+  - ./databases/postgres-cluster/compose.yaml
   - ./databases/rabbitmq/compose.yaml
   - ./databases/redis/compose.yaml
+  - ./databases/redis-cluster/compose.yaml
   - ./databases/scylladb/compose.yaml
   - ./databases/traefik/compose.yaml
   - ./databases/valkey/compose.yaml
+  - ./databases/valkey-cluster/compose.yaml
 
 networks:
   ct_shared_network:

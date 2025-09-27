@@ -1,19 +1,18 @@
 services:
   redis:
-    image: mirror.gcr.io/redis:8-alpine
-    ports:
-      - "6380:6379"
+    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    container_name: redis
+    environment:
+      - DB_USER=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
     volumes:
       - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    ports:
+      - "6380:6379"
     restart: unless-stopped
     networks:
       - ct_shared_network
 
 volumes:
   redis_data:
-    driver: local
