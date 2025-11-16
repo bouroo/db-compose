@@ -21,7 +21,7 @@
 
 #### Key-Value Stores
 - **Redis 8** - Single instance and cluster (6 nodes)
-- **Valkey 8** - Single instance and cluster (6 nodes)
+- **Valkey 9** - Single instance and cluster (6 nodes)
 
 #### Document Databases
 - **MongoDB 8** - NoSQL document store

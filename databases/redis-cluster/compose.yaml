@@ -159,4 +159,3 @@ volumes:
   redis_node_3_data:
   redis_node_4_data:
   redis_node_5_data:
-    name: db-compose_redis_node_5_data

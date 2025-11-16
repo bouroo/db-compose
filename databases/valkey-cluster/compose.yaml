@@ -1,6 +1,6 @@
 services:
   valkey-0:
-    image: mirror.gcr.io/valkey/valkey:8-alpine
+    image: mirror.gcr.io/valkey/valkey:9-alpine
     container_name: valkey-0
     environment:
       TZ: ${TZ}
@@ -21,7 +21,7 @@ services:
     command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
 
   valkey-1:
-    image: mirror.gcr.io/valkey/valkey:8-alpine
+    image: mirror.gcr.io/valkey/valkey:9-alpine
     container_name: valkey-1
     environment:
       TZ: ${TZ}
@@ -40,7 +40,7 @@ services:
     command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
 
   valkey-2:
-    image: mirror.gcr.io/valkey/valkey:8-alpine
+    image: mirror.gcr.io/valkey/valkey:9-alpine
     container_name: valkey-2
     environment:
       TZ: ${TZ}
@@ -59,7 +59,7 @@ services:
     command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
 
   valkey-3:
-    image: mirror.gcr.io/valkey/valkey:8-alpine
+    image: mirror.gcr.io/valkey/valkey:9-alpine
     container_name: valkey-3
     environment:
       TZ: ${TZ}
@@ -78,7 +78,7 @@ services:
     command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
 
   valkey-4:
-    image: mirror.gcr.io/valkey/valkey:8-alpine
+    image: mirror.gcr.io/valkey/valkey:9-alpine
     container_name: valkey-4
     environment:
       TZ: ${TZ}
@@ -97,7 +97,7 @@ services:
     command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
 
   valkey-5:
-    image: mirror.gcr.io/valkey/valkey:8-alpine
+    image: mirror.gcr.io/valkey/valkey:9-alpine
     container_name: valkey-5
     environment:
       TZ: ${TZ}
@@ -116,7 +116,7 @@ services:
     command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --protected-mode no --port 6379 --bind 0.0.0.0 --requirepass ${DB_PASSWORD}
 
   valkey-cluster-init:
-    image: mirror.gcr.io/valkey/valkey:8-alpine
+    image: mirror.gcr.io/valkey/valkey:9-alpine
     container_name: valkey-cluster-init
     environment:
       VALKEY_PASSWORD: ${DB_PASSWORD}
@@ -162,4 +162,3 @@ volumes:
   valkey_3_data:
   valkey_4_data:
   valkey_5_data:
-    name: db-compose_valkey_5_data

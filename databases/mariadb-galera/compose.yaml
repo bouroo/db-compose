@@ -158,9 +158,6 @@ services:
 
 volumes:
   galera_node_0_data:
-    driver: local
   galera_node_1_data:
-    driver: local
   galera_node_2_data:
-    driver: local
   maxscale_config:

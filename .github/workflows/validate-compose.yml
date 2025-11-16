@@ -1,4 +1,4 @@
-name: Validate Docker Compose
+name: Validate Container Compose - Docker & Podman
 
 on:
   push:
@@ -11,27 +11,146 @@ on:
 jobs:
   validate-compose:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [docker, podman]
+        service-group:
+          - name: basic
+            services: postgres mariadb mongo redis
+          - name: cluster
+            services: postgres-cluster redis-cluster valkey-cluster mariadb-galera
+          - name: messaging
+            services: kafka rabbitmq nats
+          - name: nosql
+            services: mongo scylladb clickhouse
+          - name: tools
+            services: dbgate traefik
 
+    name: Test ${{ matrix.runtime }} - ${{ matrix.service-group.name }}
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Compose
+      - name: Set up Podman
+        if: matrix.runtime == 'podman'
         run: |
-          # Install Docker Compose (v2) if not already present
-          # GitHub Actions runners usually have Docker pre-installed
-          echo "Setting up Docker Compose..."
+          sudo apt-get update
+          sudo apt-get install -y podman
+          # Install podman-compose (Python package)
+          pip install podman-compose
+          podman --version
+          podman-compose --version
 
-      - name: Copy example.env to .env
+      - name: Set up Docker
+        if: matrix.runtime == 'docker'
+        run: |
+          # Docker is usually pre-installed on GitHub Actions runners
+          docker --version
+          docker compose version
+
+      - name: Copy environment file
         run: cp example.env .env
 
-      - name: Validate Compose files
+      - name: Validate compose syntax
         run: |
-          # Use docker compose config to validate the syntax and structure
-          # This command will fail if there are any syntax errors or unresolved references
-          docker compose config
+          if [ "${{ matrix.runtime }}" = "podman" ]; then
+            echo "Validating compose files with Podman..."
+            podman-compose config
+          else
+            echo "Validating compose files with Docker..."
+            docker compose config
+          fi
 
-      - name: Pull Docker images
+      - name: Pull images
         run: |
-          # Attempt to pull all images to ensure they are accessible from the configured registry
-          docker compose pull
+          if [ "${{ matrix.runtime }}" = "podman" ]; then
+            echo "Pulling images for ${{ matrix.service-group.name }} services with Podman..."
+            podman-compose pull ${{ matrix.service-group.services }}
+          else
+            echo "Pulling images for ${{ matrix.service-group.name }} services with Docker..."
+            docker compose pull ${{ matrix.service-group.services }}
+          fi
+
+      - name: Start services
+        run: |
+          if [ "${{ matrix.runtime }}" = "podman" ]; then
+            echo "Starting ${{ matrix.service-group.name }} services with Podman..."
+            podman-compose up -d ${{ matrix.service-group.services }}
+          else
+            echo "Starting ${{ matrix.service-group.name }} services with Docker..."
+            docker compose up -d ${{ matrix.service-group.services }}
+          fi
+
+      - name: Wait for services
+        run: |
+          echo "Waiting for services to start..."
+          sleep 60
+
+      - name: Check service health
+        run: |
+          if [ "${{ matrix.runtime }}" = "podman" ]; then
+            echo "Checking service health with Podman..."
+            podman-compose ps
+          else
+            echo "Checking service health with Docker..."
+            docker compose ps
+          fi
+
+      - name: Verify service connectivity
+        run: |
+          echo "Verifying service connectivity for ${{ matrix.service-group.name }}..."
+          
+          # Basic connectivity tests based on service group
+          if [[ "${{ matrix.service-group.name }}" == "basic" ]]; then
+            # Test basic database connectivity
+            if [[ "${{ matrix.service-group.services }}" == *"postgres"* ]]; then
+              if [ "${{ matrix.runtime }}" = "podman" ]; then
+                podman-compose exec postgres pg_isready -U common_user -d common_database
+              else
+                docker compose exec postgres pg_isready -U common_user -d common_database
+              fi
+            fi
+            
+            if [[ "${{ matrix.service-group.services }}" == *"redis"* ]]; then
+              if [ "${{ matrix.runtime }}" = "podman" ]; then
+                podman-compose exec redis redis-cli ping
+              else
+                docker compose exec redis redis-cli ping
+              fi
+            fi
+          fi
+          
+          if [[ "${{ matrix.service-group.name }}" == "cluster" ]]; then
+            # Test cluster formation
+            if [[ "${{ matrix.service-group.services }}" == *"postgres-cluster"* ]]; then
+              if [ "${{ matrix.runtime }}" = "podman" ]; then
+                podman-compose exec postgres-primary pg_isready -U common_user -d common_database
+              else
+                docker compose exec postgres-primary pg_isready -U common_user -d common_database
+              fi
+            fi
+          fi
+
+      - name: Collect logs for debugging
+        if: failure()
+        run: |
+          echo "=== COLLECTING LOGS FOR DEBUGGING ==="
+          if [ "${{ matrix.runtime }}" = "podman" ]; then
+            echo "Podman logs:"
+            podman-compose logs --tail=100 ${{ matrix.service-group.services }}
+          else
+            echo "Docker logs:"
+            docker compose logs --tail=100 ${{ matrix.service-group.services }}
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "Cleaning up containers and volumes..."
+          if [ "${{ matrix.runtime }}" = "podman" ]; then
+            podman-compose down -v || true
+          else
+            docker compose down -v || true
+          fi

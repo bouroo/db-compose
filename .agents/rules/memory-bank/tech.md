@@ -116,7 +116,7 @@
 
 #### Valkey
 - **Version**: 8-alpine
-- **Image**: `mirror.gcr.io/valkey/valkey:8-alpine`
+- **Image**: `mirror.gcr.io/valkey/valkey:9-alpine`
 - **Port**: 6379
 - **Data Path**: `/data`
 - **Features**:
@@ -413,7 +413,7 @@ PGBOUNCER_AUTH_TYPE: md5
 **Images Using Alpine**:
 - PostgreSQL 18-alpine
 - Redis 8-alpine
-- Valkey 8-alpine
+- Valkey 9-alpine
 - NATS 2-alpine
 - RabbitMQ 4-management-alpine
 - DBGate alpine
