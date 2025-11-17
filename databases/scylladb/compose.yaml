@@ -16,4 +16,3 @@ services:
 
 volumes:
   scylladb_data:
-    driver: local

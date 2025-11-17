@@ -1,6 +1,6 @@
 services:
   clickhouse:
-    image: mirror.gcr.io/rapidfort/clickhouse-official:lts
+    image: clickhouse:latest
     container_name: clickhouse
     environment:
       - DB_USER=${DB_USERNAME}

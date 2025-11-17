@@ -1,6 +1,6 @@
 services:
   galera-node-0:
-    image: mirror.gcr.io/rapidfort/mariadb-official:lts
+    image: mariadb:lts
     container_name: galera-node-0
     environment:
       TZ: ${TZ}
@@ -24,7 +24,7 @@ services:
     command: --wsrep-cluster-address=gcomm://
 
   galera-node-1:
-    image: mirror.gcr.io/rapidfort/mariadb-official:lts
+    image: mariadb:lts
     container_name: galera-node-1
     environment:
       TZ: ${TZ}
@@ -51,7 +51,7 @@ services:
     command: --wsrep-cluster-address=gcomm://galera-node-0
 
   galera-node-2:
-    image: mirror.gcr.io/rapidfort/mariadb-official:lts
+    image: mariadb:lts
     container_name: galera-node-2
     environment:
       TZ: ${TZ}
@@ -80,7 +80,7 @@ services:
     command: --wsrep-cluster-address=gcomm://galera-node-0
 
   maxscale:
-    image: mirror.gcr.io/maxscale/maxscale:24.02
+    image: mariadb/maxscale:24.02
     container_name: maxscale
     environment:
       TZ: ${TZ}
@@ -158,9 +158,6 @@ services:
 
 volumes:
   galera_node_0_data:
-    driver: local
   galera_node_1_data:
-    driver: local
   galera_node_2_data:
-    driver: local
   maxscale_config:

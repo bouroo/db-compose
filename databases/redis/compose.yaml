@@ -1,6 +1,6 @@
 services:
   redis:
-    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    image: redis:8-alpine
     container_name: redis
     environment:
       - DB_USER=${DB_USERNAME}

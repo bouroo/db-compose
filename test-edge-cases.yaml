@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - CUSTOM_VAR=test_value_with_underscores
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+
+  redis:
+    image: redis:8-alpine
+    container_name: redis
+    command: redis-server --requirepass ${DB_PASSWORD} --maxmemory ${REDIS_MAX_MEMORY:-256mb}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"
+    restart: unless-stopped
+    networks:
+      - ct_shared_network
+
+  port-conflict:
+    image: nginx:alpine
+    container_name: port-conflict
+    ports:
+      - "5432:80"  # This should conflict with postgres
+    networks:
+      - ct_shared_network
+    restart: unless-stopped
+
+networks:
+  ct_shared_network:
+    name: ct_shared_network
+
+volumes:
+  postgres_data:
+  redis_data:

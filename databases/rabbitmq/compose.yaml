@@ -1,6 +1,6 @@
 services:
   rabbitmq:
-    image: mirror.gcr.io/rapidfort/rabbitmq-official:4-management-alpine
+    image: rabbitmq:4-management-alpine
     container_name: rabbitmq
     environment:
       - DB_USER=${DB_USERNAME}

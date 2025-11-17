@@ -1,6 +1,6 @@
 services:
   postgres-primary:
-    image: mirror.gcr.io/postgresql:18-alpine
+    image: postgres:18-alpine
     container_name: postgres-primary
     shm_size: 128mb
     environment:
@@ -25,7 +25,7 @@ services:
       postgres -c max_wal_senders=10 -c wal_level=replica -c hot_standby=on -c hot_standby_feedback=on -c archive_mode=on -c archive_command='cd .'
 
   postgres-replica-1:
-    image: mirror.gcr.io/postgresql:18-alpine
+    image: postgres:18-alpine
     container_name: postgres-replica-1
     shm_size: 128mb
     environment:
@@ -58,7 +58,7 @@ services:
       postgres -c hot_standby=on -c hot_standby_feedback=on"
 
   postgres-replica-2:
-    image: mirror.gcr.io/postgresql:18-alpine
+    image: postgres:18-alpine
     container_name: postgres-replica-2
     shm_size: 128mb
     environment:
@@ -113,7 +113,7 @@ services:
     restart: unless-stopped
 
   postgres-init:
-    image: mirror.gcr.io/postgresql:18-alpine
+    image: postgres:18-alpine
     container_name: postgres-init
     environment:
       TZ: ${TZ}
