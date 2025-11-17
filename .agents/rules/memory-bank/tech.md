@@ -11,6 +11,7 @@
   - Named volumes for data persistence
   - Custom networks for service discovery
   - Environment variable substitution
+  - Runtime-specific configurations
 
 ### Image Registry
 - **Source**: `mirror.gcr.io` (Google Container Registry Mirror)
@@ -19,6 +20,32 @@
   - Consistent access
   - Reduced rate limiting
   - Enterprise-grade infrastructure
+
+## Runtime Support
+
+### Docker Runtime
+- **Compatibility**: Full support with Docker Compose v2.0+
+- **Features**: All services, networking, volumes, health checks
+- **Security**: User namespaces, resource limits, seccomp profiles
+- **Management**: Docker Desktop GUI, Docker CLI
+- **Documentation**: [DOCKER_USAGE.md](DOCKER_USAGE.md)
+
+### Podman Runtime
+- **Compatibility**: Full support with Podman Compose v1.0+
+- **Features**: All services, rootless by default, daemonless
+- **Security**: Rootless containers, no daemon dependency
+- **Management**: Podman Desktop GUI, Podman CLI
+- **Documentation**: [PODMAN_USAGE.md](PODMAN_USAGE.md)
+
+### Runtime Comparison
+| Feature | Docker | Podman |
+|---------|--------|--------|
+| Industry Standard | ✅ | ❌ |
+| Daemonless | ❌ | ✅ |
+| Rootless by Default | ❌ | ✅ |
+| Kubernetes Integration | ✅ | ✅ |
+| GUI Management | ✅ (Docker Desktop) | ✅ (Podman Desktop) |
+| Security Model | User namespaces | Rootless containers |
 
 ## Database Technologies
 
@@ -35,6 +62,7 @@
   - JSON support
   - Full-text search
   - Extensibility
+  - Streaming replication
 
 **Cluster Configuration**:
 - **Components**: Primary + 2 Replicas + PgBouncer
@@ -251,6 +279,7 @@
 - Port mapping to host
 - Network isolation
 - Container-to-container communication
+- Runtime-specific network configuration
 
 ### Storage
 
@@ -300,6 +329,11 @@ REPLICATION_PASSWORD=your_secure_password
 ADMIN_UI_USERNAME=admin_user
 ADMIN_UI_PASSWORD=your_secure_password
 ```
+
+#### Runtime-Specific Configuration
+- **Docker**: Can use `deploy` section for resource limits
+- **Podman**: Can use `user` and `security_opt` for rootless operation
+- **Shared**: All environment variables work across runtimes
 
 ## Health Check Utilities
 
@@ -581,6 +615,11 @@ valkey-cluster-init → all valkey-* (healthy)
 - ❌ No secret rotation mechanism
 - ❌ Credentials in plain text
 
+### Runtime Security
+- **Docker**: User namespaces, resource limits, seccomp profiles
+- **Podman**: Rootless containers, no daemon, better integration
+- **Recommendation**: Podman provides better security by default
+
 ### Production Recommendations
 1. Use Docker Secrets or external secret management
 2. Enable TLS for all connections
@@ -588,6 +627,7 @@ valkey-cluster-init → all valkey-* (healthy)
 4. Regular security updates
 5. Audit logging enabled
 6. Access control and authentication hardening
+7. Runtime-specific security hardening
 
 ## Performance Tuning
 
@@ -609,21 +649,31 @@ services:
 ### Database-Specific Tuning
 
 **PostgreSQL**:
-- `shared_buffers`: 25% of RAM
-- `work_mem`: Based on connections
-- `max_connections`: Application dependent
+```yaml
+services:
+  postgres:
+    environment:
+      - POSTGRES_SHARED_BUFFERS=256MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=1GB
+      - POSTGRES_MAINTENANCE_WORK_MEM=64MB
+      - POSTGRES_CHECKPOINT_TARGET=32MB
+```
 
-**MariaDB**:
-- `innodb_buffer_pool_size`: 70% of RAM
-- `max_connections`: Application dependent
+**Redis**:
+```yaml
+services:
+  redis:
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+```
 
-**Redis/Valkey**:
-- `maxmemory`: Set limit to prevent OOM
-- `maxmemory-policy`: Choose eviction policy
+### Performance Optimization Strategies
 
-**MongoDB**:
-- WiredTiger cache: 50% of RAM by default
-- Connection pooling in application
+1. **Memory Management**: Set appropriate memory limits per service
+2. **CPU Optimization**: Configure CPU limits based on workload
+3. **Storage Optimization**: Use appropriate storage drivers
+4. **Connection Pooling**: Use PgBouncer/MaxScale for database connections
+5. **Network Optimization**: Consider network segmentation for security
+6. **Image Selection**: Use Alpine images where possible for smaller footprint
 
 ## Monitoring & Observability
 
@@ -658,8 +708,91 @@ services:
 3. Regular export procedures
 4. Off-site backup storage
 
+### Backup Strategies
+```bash
+# PostgreSQL backup
+docker compose exec postgres pg_dump -U ${DB_USERNAME} ${DB_NAME} > backup.sql
+
+# MongoDB backup
+docker compose exec mongodump --host mongo --port 27017 --db ${DB_NAME} --out /backup
+
+# Redis backup
+docker compose exec redis redis-cli --rdb /data/backup.rdb
+
+# Volume backup
+docker compose run --rm -v $(pwd)/backups:/backups busybox tar czf /backups/$(date +%Y%m%d).tar.gz /var/lib/docker/volumes
+```
+
 ### Future Enhancements
 - Backup automation scripts
 - Point-in-time recovery
 - Backup scheduling
 - Restore testing automation
+
+## Testing and Development
+
+### Testing Procedures
+- **Unit Testing**: Test individual service connections
+- **Integration Testing**: Test inter-service communication
+- **Performance Testing**: Test database performance under load
+
+### Development Workflow
+1. Clone repository
+2. Copy `example.env` to `.env` with secure credentials
+3. Start required services
+4. Use DBGate for database inspection and debugging
+5. Test and develop applications
+
+### Testing Scenarios
+- Service restart behavior
+- Network failure simulation
+- Load testing with pgbench and similar tools
+
+## Documentation Resources
+
+### Primary Documentation
+- **README.md**: Comprehensive overview and getting started guide
+- **DOCKER_USAGE.md**: Docker-specific instructions and best practices
+- **PODMAN_USAGE.md**: Podman-specific instructions and best practices
+- **TROUBLESHOOTING.md**: Comprehensive troubleshooting guide
+- **MIGRATION_GUIDE.md**: Migration between Docker and Podman
+
+### Documentation Enhancements
+- Runtime-specific guides for Docker and Podman
+- Production considerations and best practices
+- Performance optimization strategies
+- Comprehensive testing procedures
+- Detailed configuration management
+- Service discovery and networking documentation
+- Backup and recovery strategies
+- Security best practices
+
+## Support and Community
+
+### Getting Help
+- **Documentation Resources**: Comprehensive guides for all scenarios
+- **Community Support**: GitHub issues and discussions
+- **Professional Support**: For production environments
+
+### Contributing
+- Issue reporting with detailed information
+- Pull requests for improvements
+- Documentation updates
+- Testing and feedback
+
+## Future Technology Considerations
+
+### Potential Additions
+- Elasticsearch/OpenSearch for full-text search
+- Neo4j for graph workloads
+- TimescaleDB for time-series
+- Apache Pulsar as Kafka alternative
+- Consul for service discovery
+- Monitoring stack (Prometheus + Grafana)
+
+### Technology Evolution
+- Keep up with database version releases
+- Monitor container runtime developments
+- Track security vulnerabilities and patches
+- Evaluate new database technologies
+- Consider container runtime innovations

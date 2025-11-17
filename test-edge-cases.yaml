@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: docker.io/library/postgres:18-alpine
+    image: postgres:18-alpine
     container_name: postgres
     environment:
       - POSTGRES_USER=${DB_USERNAME}
@@ -16,7 +16,7 @@ services:
       - ct_shared_network
 
   redis:
-    image: docker.io/library/redis:8-alpine
+    image: redis:8-alpine
     container_name: redis
     command: redis-server --requirepass ${DB_PASSWORD} --maxmemory ${REDIS_MAX_MEMORY:-256mb}
     volumes:
@@ -28,7 +28,7 @@ services:
       - ct_shared_network
 
   port-conflict:
-    image: docker.io/library/nginx:alpine
+    image: nginx:alpine
     container_name: port-conflict
     ports:
       - "5432:80"  # This should conflict with postgres

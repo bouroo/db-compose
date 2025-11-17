@@ -1,6 +1,6 @@
 services:
   mongo:
-    image: mirror.gcr.io/rapidfort/mongodb-official:8
+    image: mongo:8
     container_name: mongo
     environment:
       - DB_USER=${DB_USERNAME}

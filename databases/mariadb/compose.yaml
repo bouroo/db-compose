@@ -1,6 +1,6 @@
 services:
   mariadb:
-    image: mirror.gcr.io/rapidfort/mariadb-official:lts
+    image: mariadb:lts
     container_name: mariadb
     environment:
       - DB_USER=${DB_USERNAME}

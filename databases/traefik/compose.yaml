@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: mirror.gcr.io/rapidfort/traefik:3
+    image: traefik:v3
     container_name: traefik
     environment:
       - DB_USER=${DB_USERNAME}

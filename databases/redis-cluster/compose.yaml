@@ -1,6 +1,6 @@
 services:
   redis-node-0:
-    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    image: redis:8-alpine
     container_name: redis-node-0
     environment:
       REDIS_PASSWORD: ${DB_PASSWORD}
@@ -19,7 +19,7 @@ services:
       - ct_shared_network
 
   redis-node-1:
-    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    image: redis:8-alpine
     container_name: redis-node-1
     environment:
       REDIS_PASSWORD: ${DB_PASSWORD}
@@ -38,7 +38,7 @@ services:
       - ct_shared_network
 
   redis-node-2:
-    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    image: redis:8-alpine
     container_name: redis-node-2
     environment:
       REDIS_PASSWORD: ${DB_PASSWORD}
@@ -57,7 +57,7 @@ services:
       - ct_shared_network
 
   redis-node-3:
-    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    image: redis:8-alpine
     container_name: redis-node-3
     environment:
       REDIS_PASSWORD: ${DB_PASSWORD}
@@ -76,7 +76,7 @@ services:
       - ct_shared_network
 
   redis-node-4:
-    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    image: redis:8-alpine
     container_name: redis-node-4
     environment:
       REDIS_PASSWORD: ${DB_PASSWORD}
@@ -95,7 +95,7 @@ services:
       - ct_shared_network
 
   redis-node-5:
-    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    image: redis:8-alpine
     container_name: redis-node-5
     environment:
       REDIS_PASSWORD: ${DB_PASSWORD}
@@ -114,7 +114,7 @@ services:
       - ct_shared_network
 
   redis-cluster-init:
-    image: mirror.gcr.io/rapidfort/redis-official:8-alpine
+    image: redis:8-alpine
     container_name: redis-cluster-init
     environment:
       REDIS_PASSWORD: ${DB_PASSWORD}

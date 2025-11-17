@@ -2,7 +2,7 @@
 
 ## Architectural Overview
 
-db-compose implements a **Modular Monorepo Architecture** using Docker/Podman Compose's `include` directive to create a unified, manageable collection of independent database services.
+db-compose implements a **Modular Monorepo Architecture** using Docker/Podman Compose's `include` directive to create a unified, manageable collection of independent database services. The architecture supports both Docker and Podman runtimes with full feature parity and runtime-specific optimizations.
 
 ## Architecture Diagram
 
@@ -11,14 +11,14 @@ db-compose implements a **Modular Monorepo Architecture** using Docker/Podman Co
 │                     Root compose.yaml                        │
 │                    (Service Orchestrator)                    │
 └─────────────────────────────────────────────────────────────┘
-                            │
-                ┌───────────┴───────────┐
-                │  include directives   │
-                └───────────┬───────────┘
-                            │
-        ┌───────────────────┼───────────────────┐
-        │                   │                   │
-        ▼                   ▼                   ▼
+                             │
+                 ┌───────────┴───────────┐
+                 │  include directives   │
+                 └───────────┬───────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+         ▼                   ▼                   ▼
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
 │  Single DBs  │    │   Clusters   │    │   Support    │
 ├──────────────┤    ├──────────────┤    ├──────────────┤
@@ -33,14 +33,14 @@ db-compose implements a **Modular Monorepo Architecture** using Docker/Podman Co
 │ rabbitmq     │    └──────────────┘
 │ nats         │
 └──────────────┘
-        │                   │                   │
-        └───────────────────┼───────────────────┘
-                            │
-                            ▼
-                ┌───────────────────────┐
-                │  ct_shared_network    │
-                │  (Service Discovery)  │
-                └───────────────────────┘
+         │                   │                   │
+         └───────────────────┼───────────────────┘
+                             │
+                             ▼
+                 ┌───────────────────────┐
+                 │  ct_shared_network    │
+                 │  (Service Discovery)  │
+                 └───────────────────────┘
 ```
 
 ## Core Architectural Principles
@@ -54,6 +54,7 @@ db-compose implements a **Modular Monorepo Architecture** using Docker/Podman Co
 - Individual compose files are reusable in other projects
 - Changes to one service don't affect others
 - Easier to understand and troubleshoot
+- Consistent patterns across all services
 
 **Implementation**:
 ```
@@ -64,6 +65,7 @@ Each file is self-contained with:
 - Service definition
 - Volume declarations
 - Service-specific configuration
+- Health checks and restart policies
 
 ### 2. Composition over Inheritance (ADR-002)
 
@@ -74,6 +76,7 @@ Each file is self-contained with:
 - No hidden dependencies or overrides
 - Easy to see which services are active
 - Simple to add/remove services
+- Works with both Docker and Podman Compose v2+
 
 **Implementation**:
 ```yaml
@@ -93,6 +96,7 @@ include:
 - Easy to change configuration globally
 - Prevents configuration drift between services
 - Supports multiple environments (dev, test, prod-like)
+- Runtime-specific configurations possible
 
 **Implementation**:
 ```env
@@ -100,6 +104,8 @@ include:
 DB_USERNAME=common_user
 DB_PASSWORD=secure_password
 DB_NAME=common_database
+TZ=Asia/Bangkok
+LANG=C.UTF-8
 ```
 
 All services reference: `${DB_USERNAME}`, `${DB_PASSWORD}`, `${DB_NAME}`
@@ -113,6 +119,7 @@ All services reference: `${DB_USERNAME}`, `${DB_PASSWORD}`, `${DB_NAME}`
 - No need for IP address management
 - Automatic DNS resolution
 - Isolated from host network
+- Works with both Docker and Podman
 
 **Implementation**:
 ```yaml
@@ -137,6 +144,7 @@ Services reference each other by name: `postgres:5432`, `redis:6379`, etc.
 - Dependencies start in correct order
 - Health status is visible and actionable
 - Mirrors production configurations
+- Essential for reliable operation
 
 **Implementation**:
 ```yaml
@@ -153,17 +161,53 @@ services:
         condition: service_healthy
 ```
 
+### 6. Dual Runtime Support (ADR-006)
+
+**Decision**: Support both Docker and Podman container runtimes.
+
+**Rationale**:
+- Broader user base and compatibility
+- Different security models (Podman rootless)
+- Different deployment scenarios
+- User choice based on preferences and requirements
+- Future-proofs the project
+
+**Implementation**:
+- Compatible Compose file format for both runtimes
+- Runtime-specific documentation and guides
+- Migration guides between runtimes
+- Feature parity maintained across runtimes
+
+### 7. Documentation-First Architecture (ADR-007)
+
+**Decision**: Comprehensive documentation as integral part of architecture.
+
+**Rationale**:
+- Reduces support burden
+- Improves user experience
+- Enables self-service onboarding
+- Captures architectural decisions
+- Facilitates maintenance and contributions
+
+**Implementation**:
+- README.md with comprehensive overview
+- Runtime-specific guides (DOCKER_USAGE.md, PODMAN_USAGE.md)
+- Troubleshooting documentation
+- Architecture decision records
+- Performance and scaling guides
+
 ## Service Patterns
 
 ### Pattern 1: Simple Single-Instance Service
 
-**Use Cases**: Development databases, basic testing
+**Use Cases**: Development databases, basic testing, single-purpose applications
 
 **Components**:
 - Single container
 - Named volume for persistence
 - External port mapping
 - Standard health check
+- Environment variable configuration
 
 **Example**: PostgreSQL single instance
 
@@ -195,13 +239,14 @@ Application → localhost:5432 → postgres container → postgres_data volume
 
 ### Pattern 2: Primary-Replica Cluster with Connection Pooler
 
-**Use Cases**: HA testing, read scaling, failover scenarios
+**Use Cases**: HA testing, read scaling, failover scenarios, production-like environments
 
 **Components**:
 - 1 primary database (read-write)
 - N replica databases (read-only)
 - Connection pooler (PgBouncer)
 - Initialization container (one-time setup)
+- Health-based dependency ordering
 
 **Example**: PostgreSQL Cluster
 
@@ -212,9 +257,9 @@ Application → localhost:5432 → postgres container → postgres_data volume
                     │  (port 5432) │
                     └──────┬───────┘
                            │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-        ▼                  ▼                  ▼
+           ┌──────────────────┼──────────────────┐
+           │                  │                  │
+           ▼                  ▼                  ▼
 ┌───────────────┐  ┌───────────────┐  ┌───────────────┐
 │   Primary     │  │   Replica 1   │  │   Replica 2   │
 │   (Master)    │  │   (Standby)   │  │   (Standby)   │
@@ -236,6 +281,7 @@ Application → localhost:5432 → postgres container → postgres_data volume
 - Automatic replica initialization via `pg_basebackup`
 - Connection pooling reduces connection overhead
 - Read load distribution
+- Production-ready configuration
 
 ### Pattern 3: Multi-Master Cluster with Load Balancer
 
@@ -245,6 +291,7 @@ Application → localhost:5432 → postgres container → postgres_data volume
 - N database nodes (all read-write capable)
 - Load balancer/query router
 - Cluster synchronization protocol
+- Automatic node discovery
 
 **Example**: MariaDB Galera Cluster
 
@@ -256,9 +303,9 @@ Application → localhost:5432 → postgres container → postgres_data volume
                     │ (port 3306)  │
                     └──────┬───────┘
                            │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-        ▼                  ▼                  ▼
+           ┌──────────────────┼──────────────────┐
+           │                  │                  │
+           ▼                  ▼                  ▼
 ┌───────────────┐  ┌───────────────┐  ┌───────────────┐
 │  Galera Node  │  │  Galera Node  │  │  Galera Node  │
 │      0        │  │      1        │  │      2        │
@@ -281,6 +328,7 @@ Application → localhost:5432 → postgres container → postgres_data volume
 - Automatic conflict resolution
 - Virtually synchronous replication
 - No data loss on node failure
+- Built-in load balancing
 
 ### Pattern 4: Distributed Hash Cluster
 
@@ -328,6 +376,7 @@ Application → localhost:5432 → postgres container → postgres_data volume
 - Master-replica pairs for each shard
 - Automatic failover and recovery
 - Cluster topology awareness
+- High availability design
 
 ## Component Interactions
 
@@ -354,12 +403,20 @@ Application
        └─→ Replica/Standby nodes
 ```
 
+**Inter-Service Communication**:
+```
+PostgreSQL ←→ Redis (caching layer)
+Kafka ←→ PostgreSQL (event sourcing)
+MongoDB ←→ Application (document storage)
+```
+
 ### Volume Management
 
 **Volume Lifecycle**:
 1. **Creation**: Automatic on first service start
 2. **Persistence**: Survives container restart/recreation
 3. **Deletion**: Explicit via `--volumes` flag
+4. **Backup**: Manual or scripted procedures
 
 **Volume Naming Convention**:
 - Single instance: `<service>_data`
@@ -385,6 +442,30 @@ Container environment variables
     │
     ▼
 Database initialization/configuration
+```
+
+### Runtime-Specific Configuration
+
+**Docker Configuration**:
+```yaml
+# Docker-specific optimizations
+services:
+  postgres:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+```
+
+**Podman Configuration**:
+```yaml
+# Podman-specific settings (rootless, etc.)
+services:
+  postgres:
+    user: "1000:1000"  # Run as non-root
+    security_opt:
+      - no-new-privileges:true
 ```
 
 ## High Availability Patterns
@@ -433,6 +514,7 @@ Database initialization/configuration
 - Services communicate via private network
 - Only necessary ports exposed to host
 - No direct container-to-container IP addressing
+- Network segmentation possible
 
 **Implementation**:
 ```yaml
@@ -441,6 +523,7 @@ networks:
     name: ct_shared_network
     # Uses bridge driver by default
     # Isolated from external networks
+    internal: false  # Can be set to true for internal-only networks
 ```
 
 ### Credential Management
@@ -460,6 +543,21 @@ networks:
 - Use Docker Secrets for sensitive data
 - Integrate with secret management (Vault, AWS Secrets Manager)
 - Implement secret rotation policies
+- Consider runtime-specific secret management
+
+### Container Security
+
+**Docker Security**:
+- Use official images with minimal base layers
+- Implement user namespace separation
+- Regular image updates and vulnerability scanning
+- Resource limits and constraints
+
+**Podman Security**:
+- Rootless containers by default
+- Better integration with host security
+- No daemon dependency
+- Enhanced seccomp profiles
 
 ## Performance Considerations
 
@@ -474,6 +572,7 @@ networks:
 - Reliable availability
 - Consistent access
 - Reduced rate limiting
+- Enterprise-grade infrastructure
 
 ### Resource Optimization
 
@@ -484,7 +583,7 @@ networks:
 - Better resource utilization
 
 **Volume I/O**:
-- Named volumes (Docker-managed)
+- Named volumes (Docker/Podman managed)
 - Optimized for database workloads
 - Consider bind mounts for specific scenarios
 
@@ -508,6 +607,7 @@ networks:
 - Verify service readiness
 - Enable dependency ordering
 - Support automated recovery
+- Provide operational visibility
 
 **Implementation Pattern**:
 ```yaml
@@ -516,6 +616,7 @@ healthcheck:
   interval: 5s
   timeout: 5s
   retries: 5
+  start_period: 10s
 ```
 
 **Examples**:
@@ -527,6 +628,7 @@ healthcheck:
 
 **Docker/Podman Logs**:
 ```bash
+docker compose logs -f <service-name>
 podman compose logs -f <service-name>
 ```
 
@@ -536,9 +638,14 @@ podman compose logs -f <service-name>
 - journald
 - etc.
 
-### Future Observability
+### Monitoring
 
-**Potential Additions**:
+**Built-in Monitoring**:
+- Health checks (all services)
+- Docker/Podman stats
+- Container metrics
+
+**Future Observability**:
 - Prometheus exporters per database
 - Grafana dashboards
 - Centralized logging (ELK, Loki)
@@ -563,6 +670,7 @@ Developer Machine
 - Quick iteration
 - Data persists across restarts
 - Easy cleanup
+- Runtime choice based on preference
 
 ### CI/CD Environment
 
@@ -581,6 +689,25 @@ CI Runner
 - Reproducible environments
 - Fast setup/teardown
 - No state carry-over
+- Runtime-specific configurations
+
+### Production Environment
+
+```
+Production Server
+├── Container Runtime (Docker/Podman)
+├── Resource Limits and Security
+├── Monitoring and Logging
+├── Backup Systems
+└── Network Security
+```
+
+**Characteristics**:
+- All services with production configuration
+- Resource limits and security hardening
+- Comprehensive monitoring
+- Automated backup procedures
+- Network security and isolation
 
 ## Extension Points
 
@@ -592,6 +719,7 @@ CI Runner
 3. Add to root `compose.yaml` includes
 4. Document in README
 5. Test connectivity via DBGate
+6. Update runtime-specific documentation
 
 **Template**:
 ```yaml
@@ -610,6 +738,11 @@ services:
     restart: unless-stopped
     networks:
       - ct_shared_network
+    healthcheck:
+      test: ["CMD-SHELL", "<health-check-command>"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   <new-db>_data:
@@ -621,6 +754,7 @@ volumes:
 - Create service-specific `.env` file
 - Use `env_file` directive in compose
 - Override specific environment variables
+- Runtime-specific configurations
 
 **Example**:
 ```yaml
@@ -663,6 +797,16 @@ services:
 - **Decision**: Use `mirror.gcr.io` for all images
 - **Consequences**: +reliability, +consistency, -vendor lock-in
 
+### ADR-007: Dual Runtime Support
+- **Status**: Accepted
+- **Decision**: Support both Docker and Podman
+- **Consequences**: +broader compatibility, +user choice, +testing complexity
+
+### ADR-008: Documentation-First Approach
+- **Status**: Accepted
+- **Decision**: Comprehensive documentation as integral part
+- **Consequences**: +user experience, +reduced support, +maintenance overhead
+
 ## Limitations and Trade-offs
 
 ### Current Limitations
@@ -672,6 +816,7 @@ services:
 3. **No Backup Automation**: Manual backup procedures required
 4. **Development Focus**: Security suitable for dev, not production
 5. **Single Network**: No network segmentation between service types
+6. **Limited Secret Management**: No production-grade secret handling
 
 ### Design Trade-offs
 
@@ -682,6 +827,8 @@ services:
 | Registry | Mirror GCR | Reliability vs. vendor independence |
 | Network | Single shared | Simplicity vs. security isolation |
 | Clusters | Pre-configured | Ease of use vs. customization |
+| Runtimes | Both Docker and Podman | Compatibility vs. complexity |
+| Documentation | Comprehensive | User experience vs. maintenance |
 
 ## Future Architecture Considerations
 
@@ -690,3 +837,6 @@ services:
 3. **Monitoring**: Prometheus + Grafana stack
 4. **Backup**: Automated backup/restore utilities
 5. **Multi-Environment**: Dev/test/prod configuration profiles
+6. **Kubernetes**: Native Kubernetes manifests and operators
+7. **Cloud Integration**: Cloud provider-specific optimizations
+8. **Advanced Security**: Runtime security scanning and enforcement
